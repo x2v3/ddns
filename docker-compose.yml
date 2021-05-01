@@ -5,4 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      CF_API_KEY: ${CF_API_KEY}
+      DDNS_ANAME: ${DDNS_ANAME}
+      DDNS_ZONE: ${DDNS_ZONE}
     restart: unless-stopped
