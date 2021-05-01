@@ -2,6 +2,7 @@ import CloudFlare
 import requests
 import logging
 import os
+import time
 
 aname = os.getenv('DDNS_ANAME')
 target_zone = os.getenv('DDNS_ZONE')
@@ -48,4 +49,9 @@ def get_my_ip():
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s',level=logging.DEBUG)
-    main()
+    while True:
+        try:
+            main()
+        except:
+            pass
+        time.sleep(60*60)  # one hour
