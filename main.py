@@ -52,6 +52,6 @@ if __name__ == '__main__':
     while True:
         try:
             main()
-        except:
-            pass
+        except Exception as e:
+            logger.error(e)
         time.sleep(60*60)  # one hour
