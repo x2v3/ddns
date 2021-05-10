@@ -32,9 +32,14 @@ def update_record(cf, zone_id, content):
     }
     current = cf.zones.dns_records.get(zone_id, params={'name': aname + '.' + target_zone})
     logger.info('my current setting is %s' % current)
-    if len(current) == 0 or current[0]['content'] != content:
-        logger.info('updating dns record')
+    if len(current) == 0:
+        logger.info('adding dns record')
         cf.zones.dns_records.post(zone_id, data=record)
+        logger.info('dns record added')
+    elif  current[0]['content'] != content:
+        logger.info('updating dns record')
+        record_id = current[0]['id']
+        cf.zones.dns_records.put(zone_id,record_id, data=record)
         logger.info('dns record updated')
     else:
         logger.info('no need to update current dns')
