@@ -36,10 +36,10 @@ def update_record(cf, zone_id, content):
         logger.info('adding dns record')
         cf.zones.dns_records.post(zone_id, data=record)
         logger.info('dns record added')
-    elif  current[0]['content'] != content:
+    elif current[0]['content'] != content:
         logger.info('updating dns record')
         record_id = current[0]['id']
-        cf.zones.dns_records.put(zone_id,record_id, data=record)
+        cf.zones.dns_records.put(zone_id, record_id, data=record)
         logger.info('dns record updated')
     else:
         logger.info('no need to update current dns')
@@ -53,10 +53,10 @@ def get_my_ip():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s',level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', level=logging.DEBUG)
     while True:
         try:
             main()
         except Exception as e:
             logger.error(e)
-        time.sleep(60*60)  # one hour
+        time.sleep(60 * 60)  # one hour
