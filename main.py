@@ -1,20 +1,28 @@
-import CloudFlare
+from cloudflare import Cloudflare
 import requests
 import logging
 import os
 import time
 
-aname = os.getenv('DDNS_ANAME')
+aname = os. getenv('DDNS_ANAME')
 target_zone = os.getenv('DDNS_ZONE')
 logger = logging.getLogger()
 
 
 def main():
-    cf = CloudFlare.CloudFlare()
-    zones = cf.zones.get(params={'name': target_zone})
-    if len(zones) == 1:
-        zone_id = zones[0]['id']
-        zone_name = zones[0]['name']
+    # Initialize the new Cloudflare client
+    # It will automatically use CLOUDFLARE_API_TOKEN or CLOUDFLARE_API_KEY from environment
+    cf = Cloudflare()
+    
+    # Get zones using the new API structure
+    zones = cf.zones. list(name=target_zone)
+    
+    # Convert to list since the new SDK returns an iterator
+    zones_list = list(zones)
+    
+    if len(zones_list) == 1:
+        zone_id = zones_list[0]. id
+        zone_name = zones_list[0].name
 
         my_ip = get_my_ip()
         logger.info('my real ip is %s', my_ip)
@@ -24,22 +32,43 @@ def main():
 
 
 def update_record(cf, zone_id, content):
-    record = {
+    record_data = {
         'name': aname,
         'type': 'A',
         'content': content,
         'proxied': False
     }
-    current = cf.zones.dns_records.get(zone_id, params={'name': aname + '.' + target_zone})
+    
+    # Get current DNS records using the new API
+    full_record_name = f"{aname}.{target_zone}"
+    current_records = cf. dns. records.list(zone_id=zone_id, name=full_record_name)
+    
+    # Convert to list
+    current = list(current_records)
+    
     logger.info('my current setting is %s' % current)
+    
     if len(current) == 0:
         logger.info('adding dns record')
-        cf.zones.dns_records.post(zone_id, data=record)
+        cf.dns. records.create(
+            zone_id=zone_id,
+            name=aname,
+            type='A',
+            content=content,
+            proxied=False
+        )
         logger.info('dns record added')
-    elif current[0]['content'] != content:
-        logger.info('updating dns record')
-        record_id = current[0]['id']
-        cf.zones.dns_records.put(zone_id, record_id, data=record)
+    elif current[0]. content != content:
+        logger. info('updating dns record')
+        record_id = current[0]. id
+        cf.dns.records.update(
+            dns_record_id=record_id,
+            zone_id=zone_id,
+            name=aname,
+            type='A',
+            content=content,
+            proxied=False
+        )
         logger.info('dns record updated')
     else:
         logger.info('no need to update current dns')
@@ -53,7 +82,7 @@ def get_my_ip():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+    logging. basicConfig(format='%(asctime)-15s %(levelname)s %(message)s', level=logging.DEBUG)
     while True:
         try:
             main()
